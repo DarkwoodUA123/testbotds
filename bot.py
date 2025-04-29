@@ -1,7 +1,7 @@
 import discord
 import os
 from discord.ext import commands
-from discord.ui import Modal, InputText, View
+from discord.ui import Modal, TextInput, View
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения из .env файла
@@ -28,7 +28,7 @@ class StreamerSettingsModal(Modal):
         super().__init__(title="Настройка стримера")
 
         # Поле для ввода имени стримера
-        self.streamer_input = InputText(label="Введите имя стримера (например: twitch_username)", placeholder="Твич логин стримера", required=True)
+        self.streamer_input = TextInput(label="Введите имя стримера (например: twitch_username)", placeholder="Твич логин стримера", required=True)
         self.add_item(self.streamer_input)
 
     async def on_submit(self, interaction: discord.Interaction):

@@ -1,7 +1,7 @@
 import discord
 import os
 from discord.ext import commands
-from discord.ui import Modal, TextInput
+from discord.ui import Modal, TextInput, View
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения из .env файла
@@ -63,6 +63,15 @@ async def on_ready():
     # Выводим имя и аватар бота в консоль
     print(f"Имя бота: {bot.user.name}")
     print(f"URL аватара бота: {bot.user.avatar.url}")
+
+    # Отправляем приветственное сообщение с аватаром бота
+    embed = discord.Embed(
+        title=f"Добро пожаловать в настройки {bot.user.name}",
+        description="Здесь вы можете настроить стримера для вашего сервера.",
+        color=discord.Color.blue()
+    )
+    embed.set_thumbnail(url=bot.user.avatar.url)  # Устанавливаем аватар бота
+    await bot.get_channel(CHANNEL_ID).send(embed=embed)
 
 # Этот блок кода будет выполнен, если бот запускается как основной файл
 if __name__ == "__main__":

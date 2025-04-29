@@ -1,0 +1,8 @@
+app = "your-app-name"  # Замените на имя вашего приложения на Fly.io
+
+[build]
+  builder = "heroku/buildpacks:20"  # Или выбери подходящий для твоего проекта билд
+
+[env]
+  # Можно добавить переменные окружения, например:
+  # DISCORD_TOKEN = "your_discord_token"

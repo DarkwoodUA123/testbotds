@@ -1,7 +1,7 @@
 import discord
 import os
 from discord.ext import commands
-from discord.ui import Modal, TextInput, View
+from discord.ui import Modal, TextInput
 from dotenv import load_dotenv
 
 # Загружаем переменные окружения из .env файла
@@ -55,6 +55,14 @@ async def test(ctx):
         await ctx.send(f"На этом сервере настроен стример: {streamer}")
     else:
         await ctx.send("Стример не настроен. Используйте команду /settings, чтобы настроить стримера.")
+
+# Обработчик на готовность
+@bot.event
+async def on_ready():
+    print(f"Зашёл как {bot.user}")
+    # Выводим имя и аватар бота в консоль
+    print(f"Имя бота: {bot.user.name}")
+    print(f"URL аватара бота: {bot.user.avatar.url}")
 
 # Этот блок кода будет выполнен, если бот запускается как основной файл
 if __name__ == "__main__":

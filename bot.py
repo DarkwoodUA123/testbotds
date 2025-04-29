@@ -8,8 +8,8 @@ from discord.ext import commands
 load_dotenv()
 
 # Получаем данные из .env файла
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')  # Теперь токен извлекается из переменной окружения
-CHANNEL_ID = int(os.getenv('CHANNEL_ID'))  # Ваш ID канала
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
+CHANNEL_ID = int(os.getenv('CHANNEL_ID'))
 TWITCH_USERNAME = os.getenv('TWITCH_USERNAME')
 TWITCH_CLIENT_ID = os.getenv('TWITCH_CLIENT_ID')
 TWITCH_CLIENT_SECRET = os.getenv('TWITCH_CLIENT_SECRET')
@@ -24,6 +24,9 @@ message_id = None
 
 # URL гифки для прикрепления к сообщению
 GIF_URL = "https://media.giphy.com/media/your_gif_url_here.gif"  # Замените на свой URL
+
+# Словарь для хранения информации о стримерах для каждого сервера (guild)
+server_stream_settings = {}
 
 # Получение токена доступа для Twitch API
 def get_twitch_access_token():
@@ -41,12 +44,12 @@ def get_twitch_access_token():
         return None
 
 # Получение информации о стриме
-def get_stream_info():
+def get_stream_info(streamer_username):
     access_token = get_twitch_access_token()
     if access_token is None:
         return None
 
-    url = f"https://api.twitch.tv/helix/streams?user_login={TWITCH_USERNAME}"
+    url = f"https://api.twitch.tv/helix/streams?user_login={streamer_username}"
     headers = {
         "Client-ID": TWITCH_CLIENT_ID,
         "Authorization": f"Bearer {access_token}"
@@ -61,7 +64,7 @@ def get_stream_info():
             viewer_count = stream_data['viewer_count']
             return game_name, viewer_count
         else:
-            print("Нет активного стрима или ошибка данных:", json_data)
+            print(f"{streamer_username} не стримит в данный момент.")
             return None
     else:
         print("Ошибка при получении данных о стриме:", response.status_code, response.text)
@@ -78,8 +81,16 @@ async def test(ctx):
 
     print("Команда !test была вызвана")
 
+    # Получаем имя стримера для текущего сервера
+    server_id = str(ctx.guild.id)
+    if server_id in server_stream_settings:
+        streamer = server_stream_settings[server_id]
+    else:
+        await ctx.send("Стример не настроен. Используйте команду /settings, чтобы настроить стримера.")
+        return
+
     # Получаем информацию о стриме
-    stream_info = get_stream_info()
+    stream_info = get_stream_info(streamer)
     
     # Если нет данных о стриме, устанавливаем значения по умолчанию
     if stream_info is None:
@@ -90,13 +101,13 @@ async def test(ctx):
 
     # Создаем красивое сообщение с использованием Embed
     embed = discord.Embed(
-        title=f"🎮 {TWITCH_USERNAME} в эфире! 🔴",
-        description=f"Присоединяйтесь к стриму {TWITCH_USERNAME} на Twitch.",
+        title=f"🎮 {streamer} в эфире! 🔴",
+        description=f"Присоединяйтесь к стриму {streamer} на Twitch.",
         color=discord.Color.red()
     )
 
     # Добавляем поля с информацией
-    embed.add_field(name="Ссылка на стрим:", value=f"[Перейти на Twitch](https://www.twitch.tv/{TWITCH_USERNAME})", inline=False)
+    embed.add_field(name="Ссылка на стрим:", value=f"[Перейти на Twitch](https://www.twitch.tv/{streamer})", inline=False)
     embed.add_field(name="Игра:", value=game_name, inline=True)
     embed.add_field(name="Зрители:", value=viewer_count, inline=True)
 
@@ -121,6 +132,14 @@ async def test(ctx):
         await msg.edit(
             embed=embed
         )
+
+# Обработка команды /settings
+@bot.command()
+async def settings(ctx, streamer: str):
+    server_id = str(ctx.guild.id)
+    # Сохраняем настройки стримера для текущего сервера
+    server_stream_settings[server_id] = streamer
+    await ctx.send(f"Стример {streamer} настроен для отслеживания на этом сервере.")
 
 # Этот блок кода будет выполнен, если бот запускается как основной файл
 if __name__ == "__main__":

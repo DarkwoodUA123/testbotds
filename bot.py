@@ -133,13 +133,31 @@ async def test(ctx):
             embed=embed
         )
 
-# Обработка команды /settings
+# Обработка команды /settings с выбором стримера
 @bot.command()
-async def settings(ctx, streamer: str):
-    server_id = str(ctx.guild.id)
-    # Сохраняем настройки стримера для текущего сервера
-    server_stream_settings[server_id] = streamer
-    await ctx.send(f"Стример {streamer} настроен для отслеживания на этом сервере.")
+async def settings(ctx):
+    # Список доступных стримеров
+    streamers = ['streamer1', 'streamer2', 'streamer3']  # Замените на реальные имена стримеров
+
+    # Создаем выбор стримера
+    select = discord.ui.Select(
+        placeholder="Выберите стримера для отслеживания",
+        options=[discord.SelectOption(label=streamer) for streamer in streamers]
+    )
+
+    # Обработчик события выбора
+    async def select_callback(interaction: discord.Interaction):
+        selected_streamer = select.values[0]
+        server_id = str(ctx.guild.id)
+        server_stream_settings[server_id] = selected_streamer
+        await interaction.response.send_message(f"Стример {selected_streamer} настроен для отслеживания на этом сервере.")
+
+    select.callback = select_callback
+
+    # Создаем и отправляем сообщение с выпадающим списком
+    view = discord.ui.View()
+    view.add_item(select)
+    await ctx.send("Выберите стримера для отслеживания:", view=view)
 
 # Этот блок кода будет выполнен, если бот запускается как основной файл
 if __name__ == "__main__":
